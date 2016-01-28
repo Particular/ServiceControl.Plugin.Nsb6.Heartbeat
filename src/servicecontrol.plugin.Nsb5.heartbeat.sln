@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat.Sample", "ServiceControl.Plugin.Nsb5.Heartbeat.Sample\ServiceControl.Plugin.Nsb5.Heartbeat.Sample.csproj", "{33DF70EF-9434-49A2-93ED-2387020CE388}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat", "ServiceControl.Plugin.Nsb5.Heartbeat\ServiceControl.Plugin.Nsb5.Heartbeat.csproj", "{842C0A62-348B-4E78-B9F1-EC931CDDD562}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests", "ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests\ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests.csproj", "{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33DF70EF-9434-49A2-93ED-2387020CE388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33DF70EF-9434-49A2-93ED-2387020CE388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33DF70EF-9434-49A2-93ED-2387020CE388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33DF70EF-9434-49A2-93ED-2387020CE388}.Release|Any CPU.Build.0 = Release|Any CPU
+		{842C0A62-348B-4E78-B9F1-EC931CDDD562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{842C0A62-348B-4E78-B9F1-EC931CDDD562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{842C0A62-348B-4E78-B9F1-EC931CDDD562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{842C0A62-348B-4E78-B9F1-EC931CDDD562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
