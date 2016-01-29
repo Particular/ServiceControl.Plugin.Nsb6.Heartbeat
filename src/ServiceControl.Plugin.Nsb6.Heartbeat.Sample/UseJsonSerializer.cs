@@ -1,4 +1,4 @@
-﻿namespace ServiceControl.Plugin.Nsb5.Heartbeat.Sample
+﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.Sample
 {
     using NServiceBus;
 

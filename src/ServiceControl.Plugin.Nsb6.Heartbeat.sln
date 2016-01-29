@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat.Sample", "ServiceControl.Plugin.Nsb5.Heartbeat.Sample\ServiceControl.Plugin.Nsb5.Heartbeat.Sample.csproj", "{33DF70EF-9434-49A2-93ED-2387020CE388}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb6.Heartbeat.Sample", "ServiceControl.Plugin.Nsb6.Heartbeat.Sample\ServiceControl.Plugin.Nsb6.Heartbeat.Sample.csproj", "{33DF70EF-9434-49A2-93ED-2387020CE388}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat", "ServiceControl.Plugin.Nsb5.Heartbeat\ServiceControl.Plugin.Nsb5.Heartbeat.csproj", "{842C0A62-348B-4E78-B9F1-EC931CDDD562}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb6.Heartbeat", "ServiceControl.Plugin.Nsb6.Heartbeat\ServiceControl.Plugin.Nsb6.Heartbeat.csproj", "{842C0A62-348B-4E78-B9F1-EC931CDDD562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests", "ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests\ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests.csproj", "{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests", "ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests\ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests.csproj", "{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

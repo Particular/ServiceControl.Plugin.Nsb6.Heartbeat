@@ -14,7 +14,7 @@
                 fileVersion.FileBuildPart);
         }
 
-        public static Version CoreFileVersion { get; set; }
+        static Version CoreFileVersion { get; }
 
         public static bool CoreVersionIsAtLeast(int major, int minor)
         {

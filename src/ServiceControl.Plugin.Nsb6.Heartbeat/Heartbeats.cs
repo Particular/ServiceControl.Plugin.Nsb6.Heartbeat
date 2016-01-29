@@ -1,4 +1,4 @@
-﻿namespace ServiceControl.Plugin.Nsb5.Heartbeat
+﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat
 {
     using System;
     using System.Configuration;
@@ -6,11 +6,11 @@
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.Features;
-    using NServiceBus.Hosting;
     using NServiceBus.Logging;
     using NServiceBus.Transports;
-    using NServiceBus.Unicast;
     using ServiceControl.Plugin.Heartbeat.Messages;
+    using NServiceBus.Settings;
+    using System.Collections.Generic;
 
     class Heartbeats : Feature
     {
@@ -23,22 +23,28 @@
             // we need a mechanism to start and stop to register and stop heartbeats timers.
             // and both StartupTasks and IWantToRunWhenBusStartsAndStops aren't supported for send-only endpoints.
             Prerequisite(context => !context.Settings.GetOrDefault<bool>("Endpoint.SendOnly"), "The Heartbeats plugin currently isn't supported for Send-Only endpoints");
-
-            RegisterStartupTask<HeartbeatStartup>();
         }
 
         protected override void Setup(FeatureConfigurationContext context)
         {
+            if (!VersionChecker.CoreVersionIsAtLeast(4, 4))
+            {
+                context.Pipeline.Register("EnrichPreV44MessagesWithHostDetailsBehavior", new EnrichPreV44MessagesWithHostDetailsBehavior(context.Settings), "Enriches pre v4 messages with details about the host");
+            }
+
+            context.RegisterStartupTask(builder => new HeartbeatStartup(builder.Build<IDispatchMessages>(), context.Settings));
         }
 
+        [Janitor.SkipWeaving]
         class HeartbeatStartup : FeatureStartupTask, IDisposable
         {
-            public HeartbeatStartup(ISendMessages sendMessages, Configure configure, UnicastBus unicastBus)
+            public HeartbeatStartup(IDispatchMessages messageDispatcher, ReadOnlySettings settings)
             {
-                this.unicastBus = unicastBus;
-
-                backend = new ServiceControlBackend(sendMessages, configure);
-                endpointName = configure.Settings.EndpointName();
+                backend = new ServiceControlBackend(messageDispatcher, settings);
+                endpointName = settings.EndpointName().ToString();
+                HostId = settings.Get<Guid>("NServiceBus.HostInformation.HostId");
+                Host = settings.Get<string>("NServiceBus.HostInformation.DisplayName");
+                Properties = settings.Get<Dictionary<string, string>>("NServiceBus.HostInformation.Properties");
 
                 var interval = ConfigurationManager.AppSettings[@"Heartbeat/Interval"];
                 if (!String.IsNullOrEmpty(interval))
@@ -62,19 +68,21 @@
                 }
             }
 
-            protected override void OnStart()
+            protected override Task OnStart(IBusSession session)
             {
                 cancellationTokenSource = new CancellationTokenSource();
 
-                NotifyEndpointStartup(unicastBus.HostInformation, DateTime.UtcNow);
-                StartHeartbeats(unicastBus.HostInformation);
+                NotifyEndpointStartup(DateTime.UtcNow);
+                StartHeartbeats();
+
+                return Task.FromResult(0);
             }
 
-            protected override void OnStop()
+            protected override Task OnStop(IBusSession session)
             {
                 if (heartbeatTimer != null)
                 {
-                    heartbeatTimer.Dispose();
+                    heartbeatTimer.Stop();
                 }
 
                 if (cancellationTokenSource != null)
@@ -82,58 +90,59 @@
                     cancellationTokenSource.Cancel();
                 }
 
-                base.OnStop();
+                return Task.FromResult(0);
             }
 
-            void NotifyEndpointStartup(HostInformation hostInfo, DateTime startupTime)
+            void NotifyEndpointStartup(DateTime startupTime)
             {
                 // don't block here since StartupTasks are executed synchronously.
-                Task.Run(() => SendEndpointStartupMessage(hostInfo, startupTime, cancellationTokenSource.Token));
+                SendEndpointStartupMessage(startupTime, cancellationTokenSource.Token).Ignore();
             }
 
-            void StartHeartbeats(HostInformation hostInfo)
+            void StartHeartbeats()
             {
                 Logger.DebugFormat("Start sending heartbeats every {0}", heartbeatInterval);
-                heartbeatTimer = new Timer(x => SendHeartbeatMessage(hostInfo), null, TimeSpan.Zero, heartbeatInterval);
+                heartbeatTimer = new AsyncTimer();
+                heartbeatTimer.Start(SendHeartbeatMessage, heartbeatInterval, e => { });
             }
 
-            void SendEndpointStartupMessage(HostInformation hostInfo, DateTime startupTime, CancellationToken cancellationToken)
+            async Task SendEndpointStartupMessage(DateTime startupTime, CancellationToken cancellationToken)
             {
                 try
                 {
-                    backend.Send(
+                    await backend.Send(
                         new RegisterEndpointStartup
                         {
-                            HostId = hostInfo.HostId,
-                            Host = hostInfo.DisplayName,
+                            HostId = HostId,
+                            Host = Host,
                             Endpoint = endpointName,
-                            HostDisplayName = hostInfo.DisplayName,
-                            HostProperties = hostInfo.Properties,
+                            HostDisplayName = Host,
+                            HostProperties = Properties,
                             StartedAt = startupTime
-                        }, ttlTimeSpan);
+                        }, ttlTimeSpan).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     Logger.Warn(string.Format("Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {0}.", registrationRetryInterval), ex);
 
-                    Task.Delay(registrationRetryInterval, cancellationToken)
-                        .ContinueWith(t => SendEndpointStartupMessage(hostInfo, startupTime, cancellationToken), cancellationToken);
+                    await Task.Delay(registrationRetryInterval, cancellationToken).ConfigureAwait(false);
+                    await SendEndpointStartupMessage(startupTime, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            void SendHeartbeatMessage(HostInformation hostInfo)
+            async Task SendHeartbeatMessage()
             {
                 var heartBeat = new EndpointHeartbeat
                 {
                     ExecutedAt = DateTime.UtcNow,
                     EndpointName = endpointName,
-                    Host = hostInfo.DisplayName,
-                    HostId = hostInfo.HostId
+                    Host = Host,
+                    HostId = HostId
                 };
 
                 try
                 {
-                    backend.Send(heartBeat, ttlTimeSpan);
+                    await backend.Send(heartBeat, ttlTimeSpan).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -149,15 +158,16 @@
                 }
             }
 
-            readonly UnicastBus unicastBus;
-
             ServiceControlBackend backend;
             CancellationTokenSource cancellationTokenSource;
             string endpointName;
-            Timer heartbeatTimer;
+            AsyncTimer heartbeatTimer;
             TimeSpan ttlTimeSpan;
             TimeSpan heartbeatInterval = TimeSpan.FromSeconds(10);
             TimeSpan registrationRetryInterval = TimeSpan.FromMinutes(1);
+            Guid HostId;
+            string Host;
+            Dictionary<string, string> Properties;
         }
     }
 }

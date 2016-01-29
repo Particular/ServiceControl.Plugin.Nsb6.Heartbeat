@@ -1,9 +1,10 @@
-namespace ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests
+namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Support;
@@ -13,13 +14,13 @@ namespace ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests
 
     class DefaultServer : IEndpointSetupTemplate
     {
-        public BusConfiguration GetConfiguration(RunDescriptor runDescriptor, EndpointConfiguration endpointConfiguration, IConfigurationSource configSource, Action<BusConfiguration> configurationBuilderCustomization)
+        public Task<BusConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointConfiguration endpointConfiguration, IConfigurationSource configSource, Action<BusConfiguration> configurationBuilderCustomization)
         {
-            var typesToInclude = GetTypesScopedByTestClass(endpointConfiguration);
+            var typesToExclude = GetTypesNotScopedByTestClass(endpointConfiguration);
 
             var builder = new BusConfiguration();
             builder.EndpointName(endpointConfiguration.EndpointName);
-            builder.TypesToScan(typesToInclude);
+            builder.ExcludeTypes(typesToExclude.ToArray());
             builder.CustomConfigurationSource(configSource);
             builder.EnableInstallers();
             builder.UsePersistence<InMemoryPersistence>();
@@ -30,10 +31,11 @@ namespace ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests
                 r.RegisterSingleton(runDescriptor.ScenarioContext.GetType(), runDescriptor.ScenarioContext);
                 r.RegisterSingleton(typeof(ScenarioContext), runDescriptor.ScenarioContext);
             });
-            return builder;
+
+            return Task.FromResult(builder);
         }
 
-        static IEnumerable<Type> GetTypesScopedByTestClass(EndpointConfiguration endpointConfiguration)
+        static IEnumerable<Type> GetTypesNotScopedByTestClass(EndpointConfiguration endpointConfiguration)
         {
             var assemblies = new AssemblyScanner().GetScannableAssemblies();
 
@@ -43,7 +45,7 @@ namespace ServiceControl.Plugin.Nsb5.Heartbeat.AcceptanceTests
                 {
                     var references = a.GetReferencedAssemblies();
 
-                    return references.All(an => an.Name != "nunit.framework");
+                    return references.All(an => an.Name == "nunit.framework");
                 })
                 .SelectMany(a => a.GetTypes());
 
