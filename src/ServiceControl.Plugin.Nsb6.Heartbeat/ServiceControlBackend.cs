@@ -29,12 +29,28 @@
             serviceControlBackendAddress = GetServiceControlAddress();
         }
 
-        public async Task Send(object result, TimeSpan timeToBeReceived)
+        async Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived)
+        {
+            var headers = new Dictionary<string, string>();
+            headers[Headers.EnclosedMessageTypes] = messageType;
+            headers[Headers.ContentType] = ContentTypes.Json; //Needed for ActiveMQ transport
+            headers[Headers.ReplyToAddress] = settings.LocalAddress();
+            headers[Headers.MessageIntent] = MessageIntentEnum.Send.ToString();
+
+            var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
+            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new[] { new DiscardIfNotReceivedBefore(timeToBeReceived) });
+            await messageSender.Dispatch(new TransportOperations(operation), new ContextBag()).ConfigureAwait(false);
+        }
+
+        internal byte[] Serialize(object result)
         {
             byte[] body;
             using (var stream = new MemoryStream())
             {
-                serializer.Serialize(new[] { result }, stream);
+                serializer.Serialize(new[]
+                {
+                    result
+                }, stream);
                 body = stream.ToArray();
             }
 
@@ -46,26 +62,19 @@
             bodyString = bodyString.Replace(toReplace, ", ServiceControl");
 
             body = Encoding.UTF8.GetBytes(bodyString);
-            // end hack
-            var headers = new Dictionary<string, string>();
-            headers[Headers.EnclosedMessageTypes] = result.GetType().FullName;
-            headers[Headers.ContentType] = ContentTypes.Json; //Needed for ActiveMQ transport
-            headers[Headers.ReplyToAddress] = settings.LocalAddress();
-            headers[Headers.MessageIntent] = MessageIntentEnum.Send.ToString();
-
-            var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
-            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new[] { new DiscardIfNotReceivedBefore(timeToBeReceived) });
-            await messageSender.Dispatch(new TransportOperations(operation), new ContextBag()).ConfigureAwait(false);
+            return body;
         }
 
-        public Task Send(EndpointHeartbeat messageToSend)
+        public Task Send(EndpointHeartbeat messageToSend, TimeSpan timeToBeReceived)
         {
-            return Send(messageToSend, TimeSpan.MaxValue);
+            var body = Serialize(messageToSend);
+            return Send(body, messageToSend.GetType().FullName, timeToBeReceived);
         }
 
-        public Task Send(RegisterEndpointStartup messageToSend)
+        public Task Send(RegisterEndpointStartup messageToSend, TimeSpan timeToBeReceived)
         {
-            return Send(messageToSend, TimeSpan.MaxValue);
+            var body = Serialize(messageToSend);
+            return Send(body, messageToSend.GetType().FullName, timeToBeReceived);
         }
 
         string GetServiceControlAddress()
