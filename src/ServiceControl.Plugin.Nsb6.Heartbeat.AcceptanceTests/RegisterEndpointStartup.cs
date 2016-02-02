@@ -1,28 +1,16 @@
-namespace ServiceControl.Plugin.Heartbeat.Messages
+﻿namespace ServiceControl.Plugin.Heartbeat.Messages
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
+    using NServiceBus;
 
-    [DataContract]
-    class RegisterEndpointStartup
+    class RegisterEndpointStartup : IMessage
     {
-        [DataMember]
         public Guid HostId { get; set; }
-
-        [DataMember]
         public string Endpoint { get; set; }
-
-        [DataMember]
         public DateTime StartedAt { get; set; }
-
-        [DataMember]
         public Dictionary<string, string> HostProperties { get; set; }
-
-        [DataMember]
         public string HostDisplayName { get; set; }
-
-        [DataMember]
         public string Host { get; set; }
     }
 }

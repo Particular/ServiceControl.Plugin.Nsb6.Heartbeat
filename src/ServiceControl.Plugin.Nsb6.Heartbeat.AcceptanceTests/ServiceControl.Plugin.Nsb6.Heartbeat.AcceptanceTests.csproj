@@ -59,7 +59,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultServer.cs" />
+    <Compile Include="EndpointHeartbeat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegisterEndpointStartup.cs" />
+    <Compile Include="When_trying_to_parse_message_using_core_json_serializer.cs" />
     <Compile Include="When_service_control_queue_unavailable_at_startup.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,21 +1,13 @@
 ﻿namespace ServiceControl.Plugin.Heartbeat.Messages
 {
     using System;
-    using System.Runtime.Serialization;
+    using NServiceBus;
 
-    [DataContract]
-    class EndpointHeartbeat
+    class EndpointHeartbeat : IMessage
     {
-        [DataMember]
         public DateTime ExecutedAt { get; set; }
-
-        [DataMember]
         public string EndpointName { get; set; }
-
-        [DataMember]
         public Guid HostId { get; set; }
-
-        [DataMember]
         public string Host { get; set; }
     }
 }

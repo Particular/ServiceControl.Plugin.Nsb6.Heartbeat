@@ -7,20 +7,22 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
+    using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.Config.ConfigurationSource;
     using NServiceBus.Features;
     using NServiceBus.Hosting.Helpers;
+    using ServiceControl.Plugin.Heartbeat.Messages;
 
     class DefaultServer : IEndpointSetupTemplate
     {
         public Task<BusConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointConfiguration endpointConfiguration, IConfigurationSource configSource, Action<BusConfiguration> configurationBuilderCustomization)
         {
-            var typesToExclude = GetTypesNotScopedByTestClass(endpointConfiguration);
+            var typesToInclude = GetTypesNotScopedByTestClass(endpointConfiguration);
 
             var builder = new BusConfiguration();
             builder.EndpointName(endpointConfiguration.EndpointName);
-            builder.ExcludeTypes(typesToExclude.ToArray());
+            builder.TypesToIncludeInScan(typesToInclude.ToArray());
             builder.CustomConfigurationSource(configSource);
             builder.EnableInstallers();
             builder.UsePersistence<InMemoryPersistence>();
@@ -31,7 +33,7 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
                 r.RegisterSingleton(runDescriptor.ScenarioContext.GetType(), runDescriptor.ScenarioContext);
                 r.RegisterSingleton(typeof(ScenarioContext), runDescriptor.ScenarioContext);
             });
-
+            configurationBuilderCustomization(builder);
             return Task.FromResult(builder);
         }
 
@@ -49,6 +51,13 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
                 })
                 .SelectMany(a => a.GetTypes());
 
+            types = types.Union(Type.GetType("ServiceControl.Plugin.Nsb6.Heartbeat.Heartbeats, ServiceControl.Plugin.Nsb6.Heartbeat", true).Assembly.GetTypes());
+
+            types = types.Union(new[]
+            {
+                typeof(EndpointHeartbeat),
+                typeof(RegisterEndpointStartup)
+            });
 
             types = types.Union(GetNestedTypeRecursive(endpointConfiguration.BuilderType.DeclaringType, endpointConfiguration.BuilderType));
 

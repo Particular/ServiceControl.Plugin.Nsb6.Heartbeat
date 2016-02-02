@@ -5,13 +5,14 @@
     using System.Configuration;
     using System.IO;
     using System.Net;
+    using System.Runtime.Serialization;
+    using System.Runtime.Serialization.Json;
     using System.Text;
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.Config;
     using NServiceBus.Extensibility;
     using NServiceBus.Performance.TimeToBeReceived;
-    using NServiceBus.Serializers.Json;
     using NServiceBus.Settings;
     using NServiceBus.Support;
     using NServiceBus.Transports;
@@ -24,7 +25,18 @@
             this.settings = settings;
             this.messageSender = messageSender;
 
-            serializer = new JsonMessageSerializer(new SimpleMessageMapper());
+            startupSerializer = new DataContractJsonSerializer(typeof(RegisterEndpointStartup), new DataContractJsonSerializerSettings
+            {
+                DateTimeFormat = new DateTimeFormat("o"),
+                EmitTypeInformation = EmitTypeInformation.Never,
+                UseSimpleDictionaryFormat = true,
+            });
+            heartbeatSerializer = new DataContractJsonSerializer(typeof(EndpointHeartbeat), new DataContractJsonSerializerSettings
+            {
+                DateTimeFormat = new DateTimeFormat("o"),
+                EmitTypeInformation = EmitTypeInformation.Never,
+                UseSimpleDictionaryFormat = true,
+            });
 
             serviceControlBackendAddress = GetServiceControlAddress();
         }
@@ -42,15 +54,22 @@
             await messageSender.Dispatch(new TransportOperations(operation), new ContextBag()).ConfigureAwait(false);
         }
 
-        internal byte[] Serialize(object result)
+        internal byte[] Serialize(EndpointHeartbeat message)
+        {
+            return Serialize(message, heartbeatSerializer);
+        }
+
+        internal byte[] Serialize(RegisterEndpointStartup message)
+        {
+            return Serialize(message, startupSerializer);
+        }
+
+        static byte[] Serialize(object result, XmlObjectSerializer serializer)
         {
             byte[] body;
             using (var stream = new MemoryStream())
             {
-                serializer.Serialize(new[]
-                {
-                    result
-                }, stream);
+                serializer.WriteObject(stream, result);
                 body = stream.ToArray();
             }
 
@@ -158,7 +177,8 @@
 
         IDispatchMessages messageSender;
 
-        JsonMessageSerializer serializer;
+        DataContractJsonSerializer startupSerializer;
+        DataContractJsonSerializer heartbeatSerializer;
         string serviceControlBackendAddress;
         ReadOnlySettings settings;
     }
