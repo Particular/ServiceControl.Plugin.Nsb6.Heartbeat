@@ -47,11 +47,9 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
                 {
                     var references = a.GetReferencedAssemblies();
 
-                    return references.All(an => an.Name == "nunit.framework");
+                    return references.All(an => an.Name != "nunit.framework");
                 })
                 .SelectMany(a => a.GetTypes());
-
-            types = types.Union(Type.GetType("ServiceControl.Plugin.Nsb6.Heartbeat.Heartbeats, ServiceControl.Plugin.Nsb6.Heartbeat", true).Assembly.GetTypes());
 
             types = types.Union(new[]
             {
