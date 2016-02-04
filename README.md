@@ -1,4 +1,4 @@
-ServiceControl.Plugin.Nsb5.Heartbeat
+ServiceControl.Plugin.Nsb6.Heartbeat
 ====================================
 
-The NSB v5 endpoint plugin that provides endpoint health information to Service Control.
+The NSB v6 endpoint plugin that provides endpoint health information to Service Control.
