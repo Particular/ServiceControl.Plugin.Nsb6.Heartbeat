@@ -3,13 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Configuration;
-    using System.Globalization;
     using System.IO;
     using System.Net;
-    using System.Runtime.Serialization.Formatters;
+    using System.Runtime.Serialization;
+    using System.Runtime.Serialization.Json;
+    using System.Text;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
     using NServiceBus;
     using NServiceBus.Config;
     using NServiceBus.Extensibility;
@@ -19,29 +18,25 @@
     using NServiceBus.Transports;
     using ServiceControl.Plugin.Heartbeat.Messages;
     using NServiceBus.Routing;
-    using JsonSerializer = Newtonsoft.Json.JsonSerializer;
-
     class ServiceControlBackend
     {
-        static JsonSerializerSettings serializerSettings = new JsonSerializerSettings
-        {
-            TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-            TypeNameHandling = TypeNameHandling.Auto,
-            Converters =
-            {
-                new IsoDateTimeConverter
-                {
-                    DateTimeStyles = DateTimeStyles.RoundtripKind
-                }
-            }
-        };
-
         public ServiceControlBackend(IDispatchMessages messageSender, ReadOnlySettings settings)
         {
             this.settings = settings;
             this.messageSender = messageSender;
 
-            serializer = JsonSerializer.Create(serializerSettings);
+            startupSerializer = new DataContractJsonSerializer(typeof(RegisterEndpointStartup), new DataContractJsonSerializerSettings
+            {
+                DateTimeFormat = new DateTimeFormat("o"),
+                EmitTypeInformation = EmitTypeInformation.Never,
+                UseSimpleDictionaryFormat = true,
+            });
+            heartbeatSerializer = new DataContractJsonSerializer(typeof(EndpointHeartbeat), new DataContractJsonSerializerSettings
+            {
+                DateTimeFormat = new DateTimeFormat("o"),
+                EmitTypeInformation = EmitTypeInformation.Never,
+                UseSimpleDictionaryFormat = true,
+            });
 
             serviceControlBackendAddress = GetServiceControlAddress();
         }
@@ -61,24 +56,31 @@
 
         internal byte[] Serialize(EndpointHeartbeat message)
         {
-            return Serialize(message, serializer);
+            return Serialize(message, heartbeatSerializer);
         }
 
         internal byte[] Serialize(RegisterEndpointStartup message)
         {
-            return Serialize(message, serializer);
+            return Serialize(message, startupSerializer);
         }
 
-        static byte[] Serialize(object result, JsonSerializer serializer)
+        static byte[] Serialize(object result, XmlObjectSerializer serializer)
         {
             byte[] body;
             using (var stream = new MemoryStream())
-            using (var sw = new StreamWriter(stream))
             {
-                serializer.Serialize(sw, result);
-                sw.Flush();
+                serializer.WriteObject(stream, result);
                 body = stream.ToArray();
             }
+
+            //hack to remove the type info from the json
+            var bodyString = Encoding.UTF8.GetString(body);
+
+            var toReplace = ", " + result.GetType().Assembly.GetName().Name;
+
+            bodyString = bodyString.Replace(toReplace, ", ServiceControl");
+
+            body = Encoding.UTF8.GetBytes(bodyString);
             return body;
         }
 
@@ -175,7 +177,8 @@
 
         IDispatchMessages messageSender;
 
-        JsonSerializer serializer;
+        DataContractJsonSerializer startupSerializer;
+        DataContractJsonSerializer heartbeatSerializer;
         string serviceControlBackendAddress;
         ReadOnlySettings settings;
     }
