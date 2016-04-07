@@ -16,12 +16,11 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 
     class DefaultServer : IEndpointSetupTemplate
     {
-        public Task<BusConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointConfiguration endpointConfiguration, IConfigurationSource configSource, Action<BusConfiguration> configurationBuilderCustomization)
+        public Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointConfiguration endpointConfiguration, IConfigurationSource configSource, Action<EndpointConfiguration> configurationBuilderCustomization)
         {
             var typesToInclude = GetTypesNotScopedByTestClass(endpointConfiguration);
 
-            var builder = new BusConfiguration();
-            builder.EndpointName(endpointConfiguration.EndpointName);
+            var builder = new EndpointConfiguration(endpointConfiguration.EndpointName);
             builder.TypesToIncludeInScan(typesToInclude.ToArray());
             builder.CustomConfigurationSource(configSource);
             builder.EnableInstallers();

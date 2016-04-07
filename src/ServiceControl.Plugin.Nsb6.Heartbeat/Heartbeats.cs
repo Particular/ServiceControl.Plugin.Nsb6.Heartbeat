@@ -15,7 +15,7 @@
     class Heartbeats : Feature
     {
         static ILog Logger = LogManager.GetLogger(typeof(Heartbeats));
-        
+
         public Heartbeats()
         {
             EnableByDefault();
@@ -47,14 +47,14 @@
                 Properties = settings.Get<Dictionary<string, string>>("NServiceBus.HostInformation.Properties");
 
                 var interval = ConfigurationManager.AppSettings[@"Heartbeat/Interval"];
-                if (!String.IsNullOrEmpty(interval))
+                if (!string.IsNullOrEmpty(interval))
                 {
                     heartbeatInterval = TimeSpan.Parse(interval);
                 }
 
                 ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks * 4); // Default ttl
                 var ttl = ConfigurationManager.AppSettings[@"Heartbeat/TTL"];
-                if (!String.IsNullOrWhiteSpace(ttl))
+                if (!string.IsNullOrWhiteSpace(ttl))
                 {
                     if (TimeSpan.TryParse(ttl, out ttlTimeSpan))
                     {
@@ -68,7 +68,7 @@
                 }
             }
 
-            protected override Task OnStart(IBusSession session)
+            protected override Task OnStart(IMessageSession session)
             {
                 cancellationTokenSource = new CancellationTokenSource();
 
@@ -78,17 +78,11 @@
                 return Task.FromResult(0);
             }
 
-            protected override Task OnStop(IBusSession session)
+            protected override Task OnStop(IMessageSession session)
             {
-                if (heartbeatTimer != null)
-                {
-                    heartbeatTimer.Stop();
-                }
+                heartbeatTimer?.Stop();
 
-                if (cancellationTokenSource != null)
-                {
-                    cancellationTokenSource.Cancel();
-                }
+                cancellationTokenSource?.Cancel();
 
                 return Task.FromResult(0);
             }
