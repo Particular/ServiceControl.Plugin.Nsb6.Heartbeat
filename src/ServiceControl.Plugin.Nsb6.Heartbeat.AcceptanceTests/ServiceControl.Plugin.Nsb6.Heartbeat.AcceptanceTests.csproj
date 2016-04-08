@@ -54,9 +54,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DefaultServer.cs" />
+    <Compile Include="ConfigureEndpointInMemoryPersistence.cs" />
+    <Compile Include="ConfigureEndpointMsmqTransport.cs" />
+    <Compile Include="EndpointTemplates\ConfigureExtensions.cs" />
+    <Compile Include="EndpointTemplates\DefaultServer.cs" />
+    <Compile Include="EndpointTemplates\EndpointCustomizationConfigurationExtensions.cs" />
     <Compile Include="EndpointHeartbeat.cs" />
     <Compile Include="RegisterEndpointStartup.cs" />
+    <Compile Include="ScenarioDescriptors\AllOutboxCapableStorages.cs" />
+    <Compile Include="ScenarioDescriptors\AllTransports.cs" />
+    <Compile Include="ScenarioDescriptors\Builders.cs" />
+    <Compile Include="ScenarioDescriptors\EnvironmentHelper.cs" />
+    <Compile Include="ScenarioDescriptors\Persistence.cs" />
+    <Compile Include="ScenarioDescriptors\Serializers.cs" />
+    <Compile Include="ScenarioDescriptors\Transports.cs" />
     <Compile Include="When_trying_to_parse_message_using_core_json_serializer.cs" />
     <Compile Include="When_service_control_queue_unavailable_at_startup.cs" />
   </ItemGroup>

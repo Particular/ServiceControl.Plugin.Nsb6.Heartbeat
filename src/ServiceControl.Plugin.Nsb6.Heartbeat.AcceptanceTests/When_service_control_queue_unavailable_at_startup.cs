@@ -5,6 +5,7 @@
     using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
     using System.Threading.Tasks;
+    using NServiceBus.AcceptanceTests.EndpointTemplates;
 
     public class When_service_control_queue_unavailable_at_startup
     {
