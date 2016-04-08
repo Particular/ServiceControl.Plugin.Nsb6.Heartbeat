@@ -6,6 +6,7 @@
     using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
     using System.Threading.Tasks;
+    using NServiceBus.AcceptanceTests.EndpointTemplates;
     using ServiceControl.Plugin.Heartbeat.Messages;
 
     public class When_trying_to_parse_message_using_core_json_serializer

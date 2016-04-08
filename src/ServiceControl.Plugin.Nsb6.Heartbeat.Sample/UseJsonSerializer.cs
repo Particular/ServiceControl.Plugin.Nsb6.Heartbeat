@@ -4,7 +4,7 @@
 
     class UseJsonSerializer : INeedInitialization
     {
-        public void Customize(BusConfiguration builder)
+        public void Customize(EndpointConfiguration builder)
         {
             builder.UseSerialization<JsonSerializer>();
         }
