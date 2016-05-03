@@ -8,7 +8,7 @@
     using ApprovalTests.Reporters;
     using NServiceBus.Settings;
     using NUnit.Framework;
-    using ServiceControl.Plugin.Heartbeat.Messages;
+    using Plugin.Heartbeat.Messages;
 
     [TestFixture]
     [UseReporter(typeof(DiffReporter))]
@@ -44,8 +44,8 @@
                 Endpoint = "My.Endpoint",
                 HostProperties = new Dictionary<string, string>
                 {
-                    { "key1", "value1"},
-                    { "key2", "value2"},
+                    {"key1", "value1"},
+                    {"key2", "value2"}
                 },
                 StartedAt = new DateTime(2016, 02, 01, 13, 59, 0),
                 Host = "Host",

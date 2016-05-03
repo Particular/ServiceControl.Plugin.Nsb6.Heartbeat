@@ -9,15 +9,16 @@
     using System.Runtime.Serialization.Json;
     using System.Text;
     using System.Threading.Tasks;
+    using Heartbeat.Messages;
     using NServiceBus;
     using NServiceBus.Config;
     using NServiceBus.Extensibility;
     using NServiceBus.Performance.TimeToBeReceived;
+    using NServiceBus.Routing;
     using NServiceBus.Settings;
     using NServiceBus.Support;
     using NServiceBus.Transports;
-    using ServiceControl.Plugin.Heartbeat.Messages;
-    using NServiceBus.Routing;
+
     class ServiceControlBackend
     {
         public ServiceControlBackend(IDispatchMessages messageSender, ReadOnlySettings settings)
@@ -29,13 +30,13 @@
             {
                 DateTimeFormat = new DateTimeFormat("o"),
                 EmitTypeInformation = EmitTypeInformation.Never,
-                UseSimpleDictionaryFormat = true,
+                UseSimpleDictionaryFormat = true
             });
             heartbeatSerializer = new DataContractJsonSerializer(typeof(EndpointHeartbeat), new DataContractJsonSerializerSettings
             {
                 DateTimeFormat = new DateTimeFormat("o"),
                 EmitTypeInformation = EmitTypeInformation.Never,
-                UseSimpleDictionaryFormat = true,
+                UseSimpleDictionaryFormat = true
             });
 
             serviceControlBackendAddress = GetServiceControlAddress();
@@ -50,7 +51,10 @@
             headers[Headers.MessageIntent] = MessageIntentEnum.Send.ToString();
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
-            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new[] { new DiscardIfNotReceivedBefore(timeToBeReceived) });
+            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new[]
+            {
+                new DiscardIfNotReceivedBefore(timeToBeReceived)
+            });
             await messageSender.Dispatch(new TransportOperations(operation), new ContextBag()).ConfigureAwait(false);
         }
 
@@ -124,7 +128,6 @@
 
             return null;
         }
-
 
         bool TryGetErrorQueueAddress(out string address)
         {

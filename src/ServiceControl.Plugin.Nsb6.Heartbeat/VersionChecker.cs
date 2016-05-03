@@ -1,9 +1,9 @@
 ﻿namespace ServiceControl.Plugin
 {
-    using NServiceBus;
     using System;
     using System.Diagnostics;
-        
+    using NServiceBus;
+
     class VersionChecker
     {
         static VersionChecker()

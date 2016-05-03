@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace ServiceControl.Plugin.Nsb6.Heartbeat
+﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     class AsyncTimer
     {
         public void Start(Func<Task> callback, TimeSpan interval, Action<Exception> errorCallback)

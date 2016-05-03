@@ -5,9 +5,9 @@
     using System.Threading.Tasks;
     using AcceptanceTesting.Customization;
     using AcceptanceTesting.Support;
+    using Config.ConfigurationSource;
     using Configuration.AdvanceExtensibility;
     using Features;
-    using NServiceBus.Config.ConfigurationSource;
     using Serialization;
 
     public class DefaultServer : IEndpointSetupTemplate
