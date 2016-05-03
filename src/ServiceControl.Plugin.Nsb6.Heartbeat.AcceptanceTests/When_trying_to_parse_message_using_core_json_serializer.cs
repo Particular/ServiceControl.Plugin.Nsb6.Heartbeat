@@ -1,16 +1,17 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
     using System.Configuration;
-    using System.Linq;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
     using System.Threading.Tasks;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
-    using ServiceControl.Plugin.Heartbeat.Messages;
+    using Plugin.Heartbeat.Messages;
 
     public class When_trying_to_parse_message_using_core_json_serializer
     {
+        private const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
+
         [Test]
         public async void Should_not_fail()
         {
@@ -19,12 +20,12 @@
                 .Done(c => c.RegisterMessage != null && c.HeartbeatMessage != null)
                 .Run();
 
-            Assert.IsTrue(testContext.RegisterMessage != null);
-            Assert.AreEqual("HeartbeatEndpoint", testContext.RegisterMessage.Endpoint);
+            Assert.NotNull(testContext.RegisterMessage);
+            Assert.AreEqual(EndpointName, testContext.RegisterMessage.Endpoint);
             Assert.IsTrue(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"));
 
-            Assert.IsTrue(testContext.HeartbeatMessage != null);
-            Assert.AreEqual("HeartbeatEndpoint", testContext.HeartbeatMessage.EndpointName);
+            Assert.NotNull(testContext.HeartbeatMessage);
+            Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
         }
 
         class HeartbeatEndpoint : EndpointConfigurationBuilder
@@ -33,10 +34,13 @@
             {
                 EndpointSetup<DefaultServer>(c =>
                 {
-                    c.UseSerialization<JsonSerializer>();
-                    c.Conventions().DefiningMessagesAs(t => t.GetInterfaces().Contains(typeof(IMessage)) && t.Assembly == typeof(When_trying_to_parse_message_using_core_json_serializer).Assembly);
+                    c.AddDeserializer<JsonSerializer>();
                 });
-                ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = "HeartbeatEndpoint";
+
+                IncludeType<EndpointHeartbeat>();
+                IncludeType<RegisterEndpointStartup>();
+                CustomEndpointName(EndpointName);
+                ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = EndpointName;
             }
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
