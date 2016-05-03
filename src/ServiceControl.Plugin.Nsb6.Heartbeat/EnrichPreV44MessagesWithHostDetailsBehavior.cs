@@ -2,8 +2,8 @@ namespace ServiceControl.Plugin.Nsb6.Heartbeat
 {
     using System;
     using System.Threading.Tasks;
-    using NServiceBus.Settings;
     using NServiceBus.Pipeline;
+    using NServiceBus.Settings;
 
     class EnrichPreV44MessagesWithHostDetailsBehavior : Behavior<IOutgoingLogicalMessageContext>
     {

@@ -1,21 +1,20 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat
 {
     using System;
+    using System.Collections.Generic;
     using System.Configuration;
     using System.Threading;
     using System.Threading.Tasks;
+    using Janitor;
     using NServiceBus;
     using NServiceBus.Features;
     using NServiceBus.Logging;
-    using NServiceBus.Transports;
-    using ServiceControl.Plugin.Heartbeat.Messages;
     using NServiceBus.Settings;
-    using System.Collections.Generic;
+    using NServiceBus.Transports;
+    using Plugin.Heartbeat.Messages;
 
     class Heartbeats : Feature
     {
-        static ILog Logger = LogManager.GetLogger(typeof(Heartbeats));
-
         public Heartbeats()
         {
             EnableByDefault();
@@ -35,7 +34,9 @@
             context.RegisterStartupTask(builder => new HeartbeatStartup(builder.Build<IDispatchMessages>(), context.Settings));
         }
 
-        [Janitor.SkipWeaving]
+        static ILog Logger = LogManager.GetLogger(typeof(Heartbeats));
+
+        [SkipWeaving]
         class HeartbeatStartup : FeatureStartupTask, IDisposable
         {
             public HeartbeatStartup(IDispatchMessages messageDispatcher, ReadOnlySettings settings)
@@ -52,7 +53,7 @@
                     heartbeatInterval = TimeSpan.Parse(interval);
                 }
 
-                ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks * 4); // Default ttl
+                ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks*4); // Default ttl
                 var ttl = ConfigurationManager.AppSettings[@"Heartbeat/TTL"];
                 if (!string.IsNullOrWhiteSpace(ttl))
                 {
@@ -62,9 +63,17 @@
                     }
                     else
                     {
-                        ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks * 4);
+                        ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks*4);
                         Logger.Warn("Invalid Heartbeat/TTL specified in AppSettings. Reverted to default TTL (4 x Heartbeat/Interval)");
                     }
+                }
+            }
+
+            public void Dispose()
+            {
+                if (cancellationTokenSource != null)
+                {
+                    cancellationTokenSource.Dispose();
                 }
             }
 
@@ -141,14 +150,6 @@
                 catch (Exception ex)
                 {
                     Logger.Warn("Unable to send heartbeat to ServiceControl:", ex);
-                }
-            }
-
-            public void Dispose()
-            {
-                if (cancellationTokenSource != null)
-                {
-                    cancellationTokenSource.Dispose();
                 }
             }
 

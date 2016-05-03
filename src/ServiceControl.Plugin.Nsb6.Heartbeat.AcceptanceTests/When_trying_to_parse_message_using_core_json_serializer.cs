@@ -1,17 +1,15 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
     using System.Configuration;
+    using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
-    using NUnit.Framework;
-    using System.Threading.Tasks;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
+    using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
 
     public class When_trying_to_parse_message_using_core_json_serializer
     {
-        private const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
-
         [Test]
         public async void Should_not_fail()
         {
@@ -28,14 +26,13 @@
             Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
         }
 
+        private const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
+
         class HeartbeatEndpoint : EndpointConfigurationBuilder
         {
             public HeartbeatEndpoint()
             {
-                EndpointSetup<DefaultServer>(c =>
-                {
-                    c.AddDeserializer<JsonSerializer>();
-                });
+                EndpointSetup<DefaultServer>(c => { c.AddDeserializer<JsonSerializer>(); });
 
                 IncludeType<EndpointHeartbeat>();
                 IncludeType<RegisterEndpointStartup>();

@@ -9,12 +9,12 @@
     {
         T IMessageCreator.CreateInstance<T>()
         {
-            return ((IMessageCreator)this).CreateInstance<T>(null);
+            return ((IMessageCreator) this).CreateInstance<T>(null);
         }
 
         T IMessageCreator.CreateInstance<T>(Action<T> action)
         {
-            var result = (T)((IMessageCreator)this).CreateInstance(typeof(T));
+            var result = (T) ((IMessageCreator) this).CreateInstance(typeof(T));
             if (action != null)
                 action(result);
 
