@@ -21,10 +21,6 @@
         internal Heartbeats()
         {
             EnableByDefault();
-
-            // we need a mechanism to start and stop to register and stop heartbeats timers.
-            // and both StartupTasks and IWantToRunWhenBusStartsAndStops aren't supported for send-only endpoints.
-            Prerequisite(context => !context.Settings.GetOrDefault<bool>("Endpoint.SendOnly"), "The Heartbeats plugin currently isn't supported for Send-Only endpoints");
         }
 
         /// <summary>Called when the features is activated.</summary>
