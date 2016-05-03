@@ -13,9 +13,12 @@
     using NServiceBus.Transports;
     using Plugin.Heartbeat.Messages;
 
-    class Heartbeats : Feature
+    /// <summary>
+    /// The ServiceControl.Heartbeat plugin.
+    /// </summary>
+    public class Heartbeats : Feature
     {
-        public Heartbeats()
+        internal Heartbeats()
         {
             EnableByDefault();
 
@@ -24,6 +27,7 @@
             Prerequisite(context => !context.Settings.GetOrDefault<bool>("Endpoint.SendOnly"), "The Heartbeats plugin currently isn't supported for Send-Only endpoints");
         }
 
+        /// <summary>Called when the features is activated.</summary>
         protected override void Setup(FeatureConfigurationContext context)
         {
             if (!VersionChecker.CoreVersionIsAtLeast(4, 4))
