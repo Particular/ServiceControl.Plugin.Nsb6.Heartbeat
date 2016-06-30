@@ -10,7 +10,7 @@
     public class When_service_control_queue_unavailable_at_startup
     {
         [Test]
-        public async void Should_not_fail_the_endpoint()
+        public async Task Should_not_fail_the_endpoint()
         {
             var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<EndpointWithMissingSCQueue>(b => b
