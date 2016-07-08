@@ -42,7 +42,7 @@
             serviceControlBackendAddress = GetServiceControlAddress();
         }
 
-        async Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived)
+        Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived)
         {
             var headers = new Dictionary<string, string>();
             headers[Headers.EnclosedMessageTypes] = messageType;
@@ -55,7 +55,7 @@
             {
                 new DiscardIfNotReceivedBefore(timeToBeReceived)
             });
-            await messageSender.Dispatch(new TransportOperations(operation), new ContextBag()).ConfigureAwait(false);
+            return messageSender.Dispatch(new TransportOperations(operation), new ContextBag());
         }
 
         internal byte[] Serialize(EndpointHeartbeat message)

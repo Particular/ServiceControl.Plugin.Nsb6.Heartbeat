@@ -11,7 +11,7 @@
     public class When_trying_to_parse_message_using_core_json_serializer
     {
         [Test]
-        public async void Should_not_fail()
+        public async Task Should_not_fail()
         {
             var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<HeartbeatEndpoint>()
