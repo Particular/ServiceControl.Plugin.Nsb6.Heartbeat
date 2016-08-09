@@ -42,7 +42,7 @@
             public HeartbeatStartup(IDispatchMessages messageDispatcher, ReadOnlySettings settings)
             {
                 backend = new ServiceControlBackend(messageDispatcher, settings);
-                endpointName = settings.EndpointName().ToString();
+                endpointName = settings.EndpointName();
                 HostId = settings.Get<Guid>("NServiceBus.HostInformation.HostId");
                 Host = settings.Get<string>("NServiceBus.HostInformation.DisplayName");
                 Properties = settings.Get<Dictionary<string, string>>("NServiceBus.HostInformation.Properties");

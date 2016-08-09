@@ -11,7 +11,6 @@
     using System.Threading.Tasks;
     using Heartbeat.Messages;
     using NServiceBus;
-    using NServiceBus.Config;
     using NServiceBus.DeliveryConstraints;
     using NServiceBus.Extensibility;
     using NServiceBus.Performance.TimeToBeReceived;
