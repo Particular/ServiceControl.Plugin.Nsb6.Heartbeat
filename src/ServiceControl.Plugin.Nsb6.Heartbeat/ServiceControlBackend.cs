@@ -12,12 +12,13 @@
     using Heartbeat.Messages;
     using NServiceBus;
     using NServiceBus.Config;
+    using NServiceBus.DeliveryConstraints;
     using NServiceBus.Extensibility;
     using NServiceBus.Performance.TimeToBeReceived;
     using NServiceBus.Routing;
     using NServiceBus.Settings;
     using NServiceBus.Support;
-    using NServiceBus.Transports;
+    using NServiceBus.Transport;
 
     class ServiceControlBackend
     {
@@ -51,11 +52,11 @@
             headers[Headers.MessageIntent] = MessageIntentEnum.Send.ToString();
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
-            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new[]
+            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new List<DeliveryConstraint>
             {
                 new DiscardIfNotReceivedBefore(timeToBeReceived)
             });
-            return messageSender.Dispatch(new TransportOperations(operation), new ContextBag());
+            return messageSender.Dispatch(new TransportOperations(operation), new TransportTransaction(), new ContextBag());
         }
 
         internal byte[] Serialize(EndpointHeartbeat message)
@@ -115,15 +116,11 @@
                 return "Particular.ServiceControl" + "@" + qm.Item2;
             }
 
-            if (VersionChecker.CoreVersionIsAtLeast(4, 1))
+            string auditAddress;
+            if (settings.TryGetAuditQueueAddress(out auditAddress))
             {
-                //audit config was added in 4.1
-                string address;
-                if (TryGetAuditAddress(out address))
-                {
-                    var qm = Parse(errorAddress);
-                    return "Particular.ServiceControl" + "@" + qm.Item2;
-                }
+                var qm = Parse(errorAddress);
+                return "Particular.ServiceControl" + "@" + qm.Item2;
             }
 
             return null;
@@ -131,27 +128,16 @@
 
         bool TryGetErrorQueueAddress(out string address)
         {
-            var faultsForwarderConfig = settings.GetConfigSection<MessageForwardingInCaseOfFaultConfig>();
-            if (!string.IsNullOrEmpty(faultsForwarderConfig?.ErrorQueue))
+            try
             {
-                address = faultsForwarderConfig.ErrorQueue;
+                address = settings.ErrorQueueAddress();
                 return true;
             }
-            address = null;
-            return false;
-        }
-
-        bool TryGetAuditAddress(out string address)
-        {
-            var auditConfig = settings.GetConfigSection<AuditConfig>();
-            if (!string.IsNullOrEmpty(auditConfig?.QueueName))
+            catch
             {
-                address = auditConfig.QueueName;
-                return true;
+                address = null;
+                return false;
             }
-            address = null;
-
-            return false;
         }
 
         static Tuple<string, string> Parse(string destination)

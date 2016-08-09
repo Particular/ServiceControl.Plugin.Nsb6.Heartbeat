@@ -10,7 +10,7 @@
     using NServiceBus.Features;
     using NServiceBus.Logging;
     using NServiceBus.Settings;
-    using NServiceBus.Transports;
+    using NServiceBus.Transport;
     using Plugin.Heartbeat.Messages;
 
     /// <summary>
