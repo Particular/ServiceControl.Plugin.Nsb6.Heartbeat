@@ -54,7 +54,7 @@
                 }
 
                 ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks*4); // Default ttl
-                var ttl = ConfigurationManager.AppSettings[@"Heartbeat/TTL"];
+                var ttl = ConfigurationManager.AppSettings["Heartbeat/TTL"];
                 if (!string.IsNullOrWhiteSpace(ttl))
                 {
                     if (TimeSpan.TryParse(ttl, out ttlTimeSpan))
@@ -71,10 +71,7 @@
 
             public void Dispose()
             {
-                if (cancellationTokenSource != null)
-                {
-                    cancellationTokenSource.Dispose();
-                }
+                cancellationTokenSource?.Dispose();
             }
 
             protected override Task OnStart(IMessageSession session)
@@ -126,7 +123,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warn(string.Format("Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {0}.", registrationRetryInterval), ex);
+                    Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
 
                     await Task.Delay(registrationRetryInterval, cancellationToken).ConfigureAwait(false);
                     await SendEndpointStartupMessage(startupTime, cancellationToken).ConfigureAwait(false);
