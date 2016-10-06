@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7B1AC063-9D0B-4A95-9ECC-6F71A95DEC44}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests</RootNamespace>
+    <AssemblyName>ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NServiceBus.AcceptanceTesting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=9fc386479f8a226c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NServiceBus.AcceptanceTesting.6.0.0\lib\net452\NServiceBus.AcceptanceTesting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NServiceBus.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=9fc386479f8a226c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NServiceBus.6.0.0\lib\net452\NServiceBus.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.4.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Messaging" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConfigureEndpointInMemoryPersistence.cs" />
+    <Compile Include="ConfigureEndpointMsmqTransport.cs" />
+    <Compile Include="EndpointTemplates\ConfigureExtensions.cs" />
+    <Compile Include="EndpointTemplates\DefaultServer.cs" />
+    <Compile Include="EndpointTemplates\EndpointCustomizationConfigurationExtensions.cs" />
+    <Compile Include="EndpointHeartbeat.cs" />
+    <Compile Include="RegisterEndpointStartup.cs" />
+    <Compile Include="ScenarioDescriptors\AllOutboxCapableStorages.cs" />
+    <Compile Include="ScenarioDescriptors\AllTransports.cs" />
+    <Compile Include="ScenarioDescriptors\Builders.cs" />
+    <Compile Include="ScenarioDescriptors\EnvironmentHelper.cs" />
+    <Compile Include="ScenarioDescriptors\Persistence.cs" />
+    <Compile Include="ScenarioDescriptors\Serializers.cs" />
+    <Compile Include="ScenarioDescriptors\Transports.cs" />
+    <Compile Include="When_trying_to_parse_message_using_core_json_serializer.cs" />
+    <Compile Include="When_service_control_queue_unavailable_at_startup.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceControl.Plugin.Nsb6.Heartbeat\ServiceControl.Plugin.Nsb6.Heartbeat.csproj">
+      <Project>{842c0a62-348b-4e78-b9f1-ec931cddd562}</Project>
+      <Name>ServiceControl.Plugin.Nsb6.Heartbeat</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
