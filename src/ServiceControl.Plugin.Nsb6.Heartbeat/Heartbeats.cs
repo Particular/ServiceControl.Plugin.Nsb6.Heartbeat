@@ -1,4 +1,4 @@
-﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat
+﻿namespace ServiceControl.Features
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,9 @@
     using NServiceBus.Logging;
     using NServiceBus.Settings;
     using NServiceBus.Transport;
+    using Plugin;
     using Plugin.Heartbeat.Messages;
+    using Plugin.Nsb6.Heartbeat;
 
     /// <summary>
     /// The ServiceControl.Heartbeat plugin.
