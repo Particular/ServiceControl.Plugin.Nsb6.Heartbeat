@@ -1,6 +1,5 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
-    using System.Configuration;
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -29,9 +28,7 @@
         {
             public EndpointWithMissingSCQueue()
             {
-                EndpointSetup<DefaultServer>();
-                // couldn't find a better way to configure the plugin settings. This will probably fail other tests in this project.
-                ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = "invalidSCQueue";
+                EndpointSetup<DefaultServer>(c => c.HeartbeatPlugin("invalidSCQueue"));
             }
         }
 

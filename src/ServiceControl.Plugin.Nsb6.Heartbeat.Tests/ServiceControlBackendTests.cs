@@ -17,7 +17,7 @@
         [Test]
         public void It_can_serialize_EndpointHeartbeat()
         {
-            ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = "SC";
+            ConfigurationManager.AppSettings["ServiceControl/Queue"] = "SC";
             var settingsHolder = new SettingsHolder();
             var backend = new ServiceControlBackend(null, settingsHolder);
 
@@ -34,7 +34,7 @@
         [Test]
         public void It_can_serialize_RegisterEndpointStartup()
         {
-            ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = "SC";
+            ConfigurationManager.AppSettings["ServiceControl/Queue"] = "SC";
             var settingsHolder = new SettingsHolder();
             var backend = new ServiceControlBackend(null, settingsHolder);
 

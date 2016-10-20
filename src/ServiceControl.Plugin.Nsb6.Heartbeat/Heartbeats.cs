@@ -1,4 +1,4 @@
-﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat
+﻿namespace ServiceControl.Features
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,9 @@
     using NServiceBus.Logging;
     using NServiceBus.Settings;
     using NServiceBus.Transport;
+    using Plugin;
     using Plugin.Heartbeat.Messages;
+    using Plugin.Nsb6.Heartbeat;
 
     /// <summary>
     /// The ServiceControl.Heartbeat plugin.
@@ -47,25 +49,26 @@
                 Host = settings.Get<string>("NServiceBus.HostInformation.DisplayName");
                 Properties = settings.Get<Dictionary<string, string>>("NServiceBus.HostInformation.Properties");
 
-                var interval = ConfigurationManager.AppSettings[@"Heartbeat/Interval"];
+                var interval = ConfigurationManager.AppSettings["Heartbeat/Interval"];
                 if (!string.IsNullOrEmpty(interval))
                 {
                     heartbeatInterval = TimeSpan.Parse(interval);
                 }
+                else if (settings.HasSetting("ServiceControl.Heartbeat.Interval"))
+                {
+                    heartbeatInterval = settings.Get<TimeSpan>("ServiceControl.Heartbeat.Interval");
+                }
 
                 ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks*4); // Default ttl
+
                 var ttl = ConfigurationManager.AppSettings["Heartbeat/TTL"];
-                if (!string.IsNullOrWhiteSpace(ttl))
+                if (!string.IsNullOrEmpty(ttl))
                 {
-                    if (TimeSpan.TryParse(ttl, out ttlTimeSpan))
-                    {
-                        Logger.InfoFormat("Heartbeat/TTL set to {0}", ttlTimeSpan);
-                    }
-                    else
-                    {
-                        ttlTimeSpan = TimeSpan.FromTicks(heartbeatInterval.Ticks*4);
-                        Logger.Warn("Invalid Heartbeat/TTL specified in AppSettings. Reverted to default TTL (4 x Heartbeat/Interval)");
-                    }
+                    ttlTimeSpan = TimeSpan.Parse(ttl);
+                }
+                else if (settings.HasSetting("ServiceControl.Heartbeat.Ttl"))
+                {
+                    ttlTimeSpan = settings.Get<TimeSpan>("ServiceControl.Heartbeat.Ttl");
                 }
             }
 
@@ -101,7 +104,7 @@
 
             void StartHeartbeats()
             {
-                Logger.DebugFormat("Start sending heartbeats every {0}", heartbeatInterval);
+                Logger.Debug($"Start sending heartbeats every {heartbeatInterval}");
                 heartbeatTimer = new AsyncTimer();
                 heartbeatTimer.Start(SendHeartbeatMessage, heartbeatInterval, e => { });
             }
@@ -123,6 +126,14 @@
                 }
                 catch (Exception ex)
                 {
+                    if (!resendRegistration)
+                    {
+                        Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
+                        return;
+                    }
+
+                    resendRegistration = false;
+
                     Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
 
                     await Task.Delay(registrationRetryInterval, cancellationToken).ConfigureAwait(false);
@@ -146,10 +157,11 @@
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warn("Unable to send heartbeat to ServiceControl:", ex);
+                    Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
                 }
             }
 
+            bool resendRegistration = true;
             ServiceControlBackend backend;
             CancellationTokenSource cancellationTokenSource;
             string endpointName;
