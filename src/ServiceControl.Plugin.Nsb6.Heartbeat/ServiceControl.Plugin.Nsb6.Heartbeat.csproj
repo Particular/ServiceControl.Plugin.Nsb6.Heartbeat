@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncTimer.cs" />
+    <Compile Include="HeartbeatPluginExtensions.cs" />
     <Compile Include="InternalsVisibleTo.cs" />
     <Compile Include="TaskExtensionMethods.cs" />
     <Compile Include="Messages\EndpointHeartbeat.cs" />

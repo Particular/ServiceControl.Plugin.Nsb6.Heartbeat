@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Configuration;
     using System.IO;
-    using System.Net;
     using System.Runtime.Serialization;
     using System.Runtime.Serialization.Json;
     using System.Text;
@@ -16,7 +15,6 @@
     using NServiceBus.Performance.TimeToBeReceived;
     using NServiceBus.Routing;
     using NServiceBus.Settings;
-    using NServiceBus.Support;
     using NServiceBus.Transport;
 
     class ServiceControlBackend
@@ -48,7 +46,7 @@
             headers[Headers.EnclosedMessageTypes] = messageType;
             headers[Headers.ContentType] = ContentTypes.Json; //Needed for ActiveMQ transport
             headers[Headers.ReplyToAddress] = settings.LocalAddress();
-            headers[Headers.MessageIntent] = MessageIntentEnum.Send.ToString();
+            headers[Headers.MessageIntent] = sendIntent;
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
             var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(serviceControlBackendAddress), deliveryConstraints: new List<DeliveryConstraint>
@@ -80,7 +78,7 @@
             //hack to remove the type info from the json
             var bodyString = Encoding.UTF8.GetString(body);
 
-            var toReplace = ", " + result.GetType().Assembly.GetName().Name;
+            var toReplace = $", {result.GetType().Assembly.GetName().Name}";
 
             bodyString = bodyString.Replace(toReplace, ", ServiceControl");
 
@@ -102,69 +100,31 @@
 
         string GetServiceControlAddress()
         {
-            var queueName = ConfigurationManager.AppSettings[@"ServiceControl/Queue"];
+            var queueName = ConfigurationManager.AppSettings["ServiceControl/Queue"];
+
             if (!string.IsNullOrEmpty(queueName))
             {
                 return queueName;
             }
 
-            string errorAddress;
-            if (TryGetErrorQueueAddress(out errorAddress))
+            if (settings.HasSetting("ServiceControl.Queue"))
             {
-                var qm = Parse(errorAddress);
-                return "Particular.ServiceControl" + "@" + qm.Item2;
+                queueName = settings.Get<string>("ServiceControl.Queue");
             }
 
-            string auditAddress;
-            if (settings.TryGetAuditQueueAddress(out auditAddress))
+            if (!string.IsNullOrEmpty(queueName))
             {
-                var qm = Parse(auditAddress);
-                return "Particular.ServiceControl" + "@" + qm.Item2;
+                return queueName;
             }
 
-            return null;
-        }
+            const string errMsg = @"You have ServiceControl plugins installed in your endpoint, however, the Particular ServiceControl queue is not specified.
+Please ensure that the Particular ServiceControl queue is specified either via code (config.HeartbeatPlugin(servicecontrolQueue)) or AppSettings (eg. <add key=""ServiceControl/Queue"" value=""particular.servicecontrol@machine""/>).";
 
-        bool TryGetErrorQueueAddress(out string address)
-        {
-            try
-            {
-                address = settings.ErrorQueueAddress();
-                return true;
-            }
-            catch
-            {
-                address = null;
-                return false;
-            }
-        }
-
-        static Tuple<string, string> Parse(string destination)
-        {
-            if (string.IsNullOrEmpty(destination))
-            {
-                throw new ArgumentException("Invalid destination address specified", nameof(destination));
-            }
-
-            var arr = destination.Split('@');
-
-            var queue = arr[0];
-            var machine = RuntimeEnvironment.MachineName;
-
-            if (string.IsNullOrWhiteSpace(queue))
-            {
-                throw new ArgumentException("Invalid destination address specified", nameof(destination));
-            }
-
-            if (arr.Length == 2)
-                if (arr[1] != "." && arr[1].ToLower() != "localhost" && arr[1] != IPAddress.Loopback.ToString())
-                    machine = arr[1];
-
-            return new Tuple<string, string>(queue, machine);
+            throw new Exception(errMsg);
         }
 
         IDispatchMessages messageSender;
-
+        readonly string sendIntent = MessageIntentEnum.Send.ToString();
         DataContractJsonSerializer startupSerializer;
         DataContractJsonSerializer heartbeatSerializer;
         string serviceControlBackendAddress;

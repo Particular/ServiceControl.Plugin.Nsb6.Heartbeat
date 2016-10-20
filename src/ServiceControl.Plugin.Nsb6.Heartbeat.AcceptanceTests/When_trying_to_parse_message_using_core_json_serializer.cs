@@ -1,6 +1,5 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
-    using System.Configuration;
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -32,12 +31,15 @@
         {
             public HeartbeatEndpoint()
             {
-                EndpointSetup<DefaultServer>(c => { c.AddDeserializer<JsonSerializer>(); });
+                EndpointSetup<DefaultServer>(c =>
+                {
+                    c.AddDeserializer<JsonSerializer>(); 
+                    c.HeartbeatPlugin(EndpointName);
+                });
 
                 IncludeType<EndpointHeartbeat>();
                 IncludeType<RegisterEndpointStartup>();
                 CustomEndpointName(EndpointName);
-                ConfigurationManager.AppSettings[@"ServiceControl/Queue"] = EndpointName;
             }
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
