@@ -25,7 +25,7 @@
             Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
         }
 
-        private const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
+        const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
 
         class HeartbeatEndpoint : EndpointConfigurationBuilder
         {
@@ -33,7 +33,7 @@
             {
                 EndpointSetup<DefaultServer>(c =>
                 {
-                    c.AddDeserializer<JsonSerializer>(); 
+                    c.AddDeserializer<JsonSerializer>();
                     c.HeartbeatPlugin(EndpointName);
                 });
 
