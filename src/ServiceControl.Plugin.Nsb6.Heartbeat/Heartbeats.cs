@@ -34,6 +34,8 @@
             }
 
             context.RegisterStartupTask(builder => new HeartbeatStartup(builder.Build<IDispatchMessages>(), context.Settings));
+
+            Logger.Warn("The ServiceControl.Plugin.Nsb6.Heartbeat package has been replaced by the NServiceBus.Heartbeat package. See the upgrade guide for more details.");
         }
 
         static ILog Logger = LogManager.GetLogger(typeof(Heartbeats));
